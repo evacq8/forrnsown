@@ -4,11 +4,16 @@
 #include <sol/sol.hpp>
 #include <filesystem>
 
+enum class MidiEventType : uint8_t {
+    NoteOff = 0x8,
+    NoteOn = 0x9,
+};
+
 struct MidiEvent {
 	uint8_t number; // Note number 0-127, 69 = A4
 	uint8_t velocity; // How hard a note was pressed 0-127
-	bool is_on = true; // Is this a MIDI ON event?
-	// int channel; // TODO not implemented yet
+	MidiEventType type;
+	//uint8_t channel; // TODO not implemented yet
 	uint32_t frame_offset = 0; // Which frame did this event happen in the buffer?
 };
 
@@ -26,10 +31,10 @@ public:
 	bool has_error = false;
 
 	double sample_rate = 44100.0;
-	int buffer_size = 128;
 
 	Forrnsown();
 	void process(float** output_buffers, uint32_t buf_size, std::vector<MidiEvent>& midi_events);
 	bool load_script(const std::string& path);
+	void sample_rate_update(double new_sample_rate);
 };
 

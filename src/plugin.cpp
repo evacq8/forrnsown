@@ -21,8 +21,10 @@ void Forrnsown::process(float** output_buffers, uint32_t buf_size, std::vector<M
 
 	LuaAudioBlockWrapper lua_block{
 		output_buffers,
-		buf_size
+		buf_size,
+		midi_events
 	};
+
 	// Execute lua 'process' function
 	if (!has_error) {
 		sol::protected_function_result result = lua_process_func(lua_block);
@@ -34,6 +36,9 @@ void Forrnsown::process(float** output_buffers, uint32_t buf_size, std::vector<M
 }
 
 bool Forrnsown::load_script(const std::string& path) {
+	// expose sample rate as a global in lua
+	lua["sample_rate"] = sample_rate; // TODO handle sample rate changes while plugin is active
+
 	std::cout << ansi::blue << "[forrnsown] loading " << lua_script_path << ansi::reset << "\n";
 	try {
 		lua.script_file(path);
@@ -51,6 +56,15 @@ bool Forrnsown::load_script(const std::string& path) {
 		has_error = true;
 		return false;
 	}
+
+
 	
 	return true;
+}
+
+
+void Forrnsown::sample_rate_update(double new_sample_rate) {
+	sample_rate = new_sample_rate;
+	lua["sample_rate"] = new_sample_rate;
+	std::cout << sample_rate << std::endl;
 }

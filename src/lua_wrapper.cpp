@@ -16,10 +16,24 @@ sol::state setup_lua() {
 	lua["loadfile"] = sol::nil;
 	lua["load"] = sol::nil;
 	lua["loadstring"] = sol::nil;
+	
+	lua.new_enum<MidiEventType>("MidiEventType", {
+		{ "NoteOff", MidiEventType::NoteOff },
+		{ "NoteOn", MidiEventType::NoteOn }
+	});
+
+	lua.new_usertype<MidiEvent>("MidiEvent",
+		"type", &MidiEvent::type,
+		//"channel", &LuaMidiEventWrapper::channel,
+		"number", &MidiEvent::number,
+		"velocity", &MidiEvent::velocity,
+		"offset", &MidiEvent::frame_offset
+	);
 
 	lua.new_usertype<LuaAudioBlockWrapper>("Block",
 		"size", sol::readonly(&LuaAudioBlockWrapper::block_size),
-		"write", &LuaAudioBlockWrapper::block_write
+		"write_sample", &LuaAudioBlockWrapper::sample_write,
+		"get_midi_events", &LuaAudioBlockWrapper::get_midi_events
 	);
 
 	// # Load test.lua (testing for now)

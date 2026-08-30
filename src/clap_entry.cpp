@@ -84,7 +84,7 @@ public:
 					note_num_byte,
 					velocity_byte,
 					// velocity 0 also means note off
-					(msg_type_nibble == 0x90) && (velocity_byte != 0),
+					(msg_type_nibble == 0x90) && (velocity_byte != 0) ? (MidiEventType)0x9 : (MidiEventType)0x8,
 					event_header->time,
 				});
 			} else std::cerr << ansi::red << "[forrnsown midi] unknown midi message type" << ansi::reset << "\n";
@@ -94,6 +94,11 @@ public:
 		forrnsown.process(output_buffers, buffer_size, midi_events);
         return CLAP_PROCESS_CONTINUE; 
     }
+
+	bool activate(double sample_rate, uint32_t min_frames, uint32_t max_frames) noexcept override {
+		if (forrnsown.sample_rate != sample_rate) forrnsown.sample_rate_update(sample_rate);
+		return true;
+	}
 
 	// ~ Audio Ports ~
 	// Do we use audio ports? Yes.

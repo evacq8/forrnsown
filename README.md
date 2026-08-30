@@ -1,15 +1,63 @@
-# Forrnsown
+# Forrnsown (work in progress)
 
-A audio plugin that lets you do all your DSP shenanigans in Lua ^v^
+An audio plugin sandbox that lets you do all your DSP shenanigans in [Lua](https://www.lua.org/about.html). ^v^
 
-# Dependencies 
+As of now the project is really finicky and inefficient, I'm really sorry if all the pro audio engineers are pulling their hair out right now.
+
+## Features
+
+* As mentioned above, you can write your logic in Lua.
+    * Right now the path is hardcoded to 'test.lua' of your working directory. I'll change that soon!
+* You may put your code in the `process_block(block)` function to process audio on a block-level
+    * I plan on adding sample-level processing soon.
+* Basic Midi NoteOff and NoteOn events can be accessed using `block:get_midi_events()`.
+* Your script will be automatically reloaded upon modifications.
+
+## Todo
+
+- [ ] Getting Tempo & Transport Sync
+- [ ] Biquad Filters
+- [ ] Performance Improvements
+- [ ] Support other Midi event types
+- [ ] Voice Manager
+- [ ] Input Channels
+- [ ] Sample-level process function
+
+## Current Usage
+
+Example: playing a 440 hz sine wave
+```lua
+local phase = 0.0
+local increment = 440.0 / sample_rate -- 440 hz
+-- called once every audio block to write output
+function process_block(block) 
+    -- getting block size
+    local block_size = block.size
+    -- loop through samples
+    for i=1, block_size do
+        -- sine oscillator
+        local sample = math.sin(phase*2*math.pi)
+        -- increment phase and wrap it
+        phase = phase + increment
+        while phase >= 1 do 
+            phase = phase -1
+        end
+        -- write to output buffers sample by sample
+        block:write_sample(i, sample, 1) -- left channel
+        block:write_sample(i, sample, 2) -- right channel
+    end
+end
+```
+
+## Dependencies 
 
 Thanks to all the stuff that makes this possible!
-* (CLAP (CLever Audio Plugin))[https://github.com/free-audio/clap] - The 100% free, open source audio plugin API that lets Forrnsown communicate with the DAW.
-* (Sol2)[https://github.com/ThePhD/sol2] - Handles all the scary C++ <-> Lua binding and wrapper stuff!
+* [CLAP (CLever Audio Plugin)](https://github.com/free-audio/clap) - The 100% free, open source audio plugin API that lets Forrnsown communicate with the DAW.
+* [Sol2](https://github.com/ThePhD/sol2) - Handles all the scary C++ <-> Lua binding and wrapper stuff!
 
-# Building From Source
+## Building From Source
 
 hehe good luck
+
 
 
