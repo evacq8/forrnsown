@@ -1,7 +1,7 @@
-#include <sol/sol.hpp>
 #include <iostream>
+#include "lua_wrapper.hpp"
 
-sol::state open_lua() {
+sol::state setup_lua() {
 	sol::state lua;
 
 	// allow only safe libraries
@@ -11,12 +11,19 @@ sol::state open_lua() {
 		sol::lib::string,
 		sol::lib::table
 	);
-	// disable scary functions in base
+	// disable scary functions from the base lua library
 	lua["dofile"] = sol::nil;
 	lua["loadfile"] = sol::nil;
 	lua["load"] = sol::nil;
 	lua["loadstring"] = sol::nil;
-	
+
+	lua.new_usertype<LuaAudioBlockWrapper>("Block",
+		"block_size", sol::readonly(&LuaAudioBlockWrapper::block_size),
+		"block_write", &LuaAudioBlockWrapper::block_write
+	);
+
+	// # Load test.lua (testing for now)
+
 	try {
 		lua.script_file("test.lua");
 	} catch (const std::exception& e) {

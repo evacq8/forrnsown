@@ -12,8 +12,8 @@ add_compile_definitions(SOL_LUA_VERSION=501)
 
 # get all .cpp files in src
 file(GLOB SRC_FILES CONFIGURE_DEPENDS "src/*.cpp")
-# add_library(forrnsown SHARED ${SRC_FILES})
-add_executable(forrnsown ${SRC_FILES})
+add_library(forrnsown SHARED ${SRC_FILES})
+#add_executable(forrnsown ${SRC_FILES})
 
 target_include_directories(forrnsown PRIVATE
 	include
@@ -34,10 +34,10 @@ target_link_libraries(forrnsown PRIVATE
 
 target_link_options(forrnsown PRIVATE ${LUAJIT_LDFLAGS})
 
-#set_target_properties(forrnsown PROPERTIES
-#	PREFIX ""
-#	SUFFIX ".clap"
-#)
+set_target_properties(forrnsown PROPERTIES
+	PREFIX ""
+	SUFFIX ".clap"
+)
 
 set(CLAP_INSTALL_PATH "$ENV{HOME}/.clap")
 add_custom_command(TARGET forrnsown POST_BUILD
