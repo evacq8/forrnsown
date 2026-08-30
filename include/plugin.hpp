@@ -2,6 +2,7 @@
 
 #include <clap/clap.h>
 #include <sol/sol.hpp>
+#include <filesystem>
 
 struct MidiEvent {
 	uint8_t number; // Note number 0-127, 69 = A4
@@ -19,6 +20,10 @@ public:
 	
 	sol::state lua; // Lua Virtual Machine used for this instance
 	sol::protected_function lua_process_func;
+	std::string lua_script_path = "test.lua";
+	std::filesystem::file_time_type last_write_time;
+	// Bool to check if any runtime or syntax errors occured to stop execution until next write
+	bool has_error = false;
 
 	double sample_rate = 44100.0;
 	int buffer_size = 128;

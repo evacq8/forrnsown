@@ -18,18 +18,11 @@ sol::state setup_lua() {
 	lua["loadstring"] = sol::nil;
 
 	lua.new_usertype<LuaAudioBlockWrapper>("Block",
-		"block_size", sol::readonly(&LuaAudioBlockWrapper::block_size),
-		"block_write", &LuaAudioBlockWrapper::block_write
+		"size", sol::readonly(&LuaAudioBlockWrapper::block_size),
+		"write", &LuaAudioBlockWrapper::block_write
 	);
 
 	// # Load test.lua (testing for now)
-
-	try {
-		lua.script_file("test.lua");
-	} catch (const std::exception& e) {
-		std::cerr << e.what() << "\n";
-		return nullptr;
-	}
 
 	return lua;
 }

@@ -3,6 +3,7 @@
 #include <vector>
 
 #include "plugin.hpp"
+#include "utils.hpp"
 
 // Main clap stuff.
 #include <clap/helpers/plugin.hh>
@@ -86,7 +87,7 @@ public:
 					(msg_type_nibble == 0x90) && (velocity_byte != 0),
 					event_header->time,
 				});
-			} else printf("Unknown event header type.\n");
+			} else std::cerr << ansi::red << "[forrnsown midi] unknown midi message type" << ansi::reset << "\n";
 		}
 
 		// ## Now let the plugin process this buffer, then continue
@@ -159,7 +160,7 @@ extern "C" {
     const clap_plugin_entry_t clap_entry = {
         .clap_version = CLAP_VERSION_INIT,
         .init = [](const char *path) -> bool { 
-            printf("Started Forrnsown.\n");
+            printf("\033[1;96m[forrnsown] started\033[0m\n");
             fflush(stdout); 
             return true; 
         },
