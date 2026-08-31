@@ -18,3 +18,5 @@ namespace ansi {
     constexpr std::string_view cyan          = "\033[1;96m";
     constexpr std::string_view white         = "\033[1;97m";
 }
+
+
