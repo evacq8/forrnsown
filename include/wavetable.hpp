@@ -5,9 +5,13 @@
 #include <string_view>
 #include <fstream>
 #include <cstdint>
+#include <functional>
 
 struct Wavetable {
 	std::vector<float> samples;
 	
 	static Wavetable from_file(const std::string& path);
+	static Wavetable from_func(std::function<float(float)> func);
+	float retrieve(float phase);
 };
+

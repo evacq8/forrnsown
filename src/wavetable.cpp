@@ -1,5 +1,6 @@
 #include "utils.hpp"
 #include "wavetable.hpp"
+#include <cmath>
 
 
 Wavetable Wavetable::from_file(const std::string& path) {
@@ -102,21 +103,21 @@ Wavetable Wavetable::from_file(const std::string& path) {
 	
 	if (audio_fmt == PCM_integer) {
 		switch (bits_per_sample) {
-			case 8:
+			case 8: // 8-bit PCM (unsigned)
 				for (int i = 0; i < total_samples; i++) {
 					// 8-bit pcm is unsigned for some reason
 					// so subtract 128 before normalizing
 					wavetable.samples[i] = (raw_bytes[i] - 128)/128.0f;
 				}
 				break;
-			case 16:
+			case 16: // 16-bit PCM
 				for (int i = 0; i < total_samples; i++) {
 					int16_t raw = raw_bytes[i*bytes_per_sample] | 
 						(uint32_t)raw_bytes[i*bytes_per_sample+1] << 8;
 					wavetable.samples[i] = raw/32768.0f;
 				}
 				break;
-			case 24:
+			case 24: // 24-bit PCM
 				for (int i = 0; i < total_samples; i++) {
 					int32_t raw = raw_bytes[i*bytes_per_sample] | 
 						(uint32_t)raw_bytes[i*bytes_per_sample+1] << 8 |
@@ -125,7 +126,7 @@ Wavetable Wavetable::from_file(const std::string& path) {
 					wavetable.samples[i] = raw/8388608.0f;
 				}
 				break;
-			case 32:
+			case 32: // 32-bit PCM
 				for (int i = 0; i < total_samples; i++) {
 					int32_t raw = raw_bytes[i*bytes_per_sample] | 
 						(uint32_t)raw_bytes[i*bytes_per_sample+1] << 8 |
@@ -142,3 +143,29 @@ Wavetable Wavetable::from_file(const std::string& path) {
 	return wavetable;
 }
 
+
+Wavetable Wavetable::from_func(std::function<float(float)> func) {
+	if (!func) throw std::runtime_error("Invalid function passed into Wavetable.from_func()");
+	const int amt_samples = 2048;
+	Wavetable wavetable;
+	wavetable.samples.resize(amt_samples);
+	for (int i = 0; i < amt_samples; i++) {
+		float phase = i/(float)amt_samples;
+		wavetable.samples[i] = func(phase);
+	}
+	return wavetable;
+}
+
+// Look up a value from the wavetable, w/ interpolation for when looking between two samples
+float Wavetable::retrieve(float phase) {
+	if (samples.size() == 0) return 0.0f;
+	phase = phase - std::floor(phase); // normalize/wrap phase
+
+	const float floating_idx = phase*samples.size();
+	const int floored_idx = std::floor(floating_idx);
+	const float fractional_part = floating_idx - floored_idx;
+	const float &lower_sample = samples[floored_idx];
+	const float &upper_sample = samples[(floored_idx+1) % samples.size()];
+
+	return (upper_sample - lower_sample) * fractional_part + lower_sample;
+}

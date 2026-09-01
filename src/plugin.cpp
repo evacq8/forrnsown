@@ -66,5 +66,4 @@ bool Forrnsown::load_script(const std::string& path) {
 void Forrnsown::sample_rate_update(double new_sample_rate) {
 	sample_rate = new_sample_rate;
 	lua["sample_rate"] = new_sample_rate;
-	std::cout << sample_rate << std::endl;
 }

@@ -1,5 +1,6 @@
 #include <iostream>
 #include "lua_wrapper.hpp"
+#include "wavetable.hpp"
 
 sol::state setup_lua() {
 	sol::state lua;
@@ -35,6 +36,13 @@ sol::state setup_lua() {
 		"write_sample", &LuaAudioBlockWrapper::sample_write,
 		"get_midi_events", &LuaAudioBlockWrapper::get_midi_events
 	);
+
+	lua.new_usertype<Wavetable>("Wavetable",
+		"from_file", &Wavetable::from_file,
+		"from_func", &Wavetable::from_func,
+		"retrieve", &Wavetable::retrieve
+	);
+
 
 	// # Load test.lua (testing for now)
 
