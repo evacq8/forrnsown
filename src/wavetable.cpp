@@ -1,11 +1,12 @@
 #include "utils.hpp"
 #include "wavetable.hpp"
+#include "utils.hpp"
 #include <cmath>
 
 
 Wavetable Wavetable::from_file(const std::string& path) {
 	const int MAX_SAMPLE_SIZE = 4096;
-	std::ifstream file(path, std::ios::binary);
+	std::ifstream file(forrnsown_path(path), std::ios::binary);
 	if (!file.is_open()) throw std::runtime_error("Couldn't open file " + path + " for wavetable.");
 
 	file.seekg(0, std::ios::end);

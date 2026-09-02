@@ -3,6 +3,7 @@
 #include <clap/clap.h>
 #include <sol/sol.hpp>
 #include <filesystem>
+#include "utils.hpp"
 
 enum class MidiEventType : uint8_t {
     NoteOff = 0x8,
@@ -17,7 +18,6 @@ struct MidiEvent {
 	uint32_t frame_offset = 0; // Which frame did this event happen in the buffer?
 };
 
-
 // An instance of forrnsown
 class Forrnsown {
 public:
@@ -25,7 +25,7 @@ public:
 	
 	sol::state lua; // Lua Virtual Machine used for this instance
 	sol::protected_function lua_process_func;
-	std::string lua_script_path = "test.lua";
+	std::filesystem::path lua_script_path = forrnsown_path("main.lua");
 	std::filesystem::file_time_type last_write_time;
 	// Bool to check if any runtime or syntax errors occured to stop execution until next write
 	bool has_error = false;
