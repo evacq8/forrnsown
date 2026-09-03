@@ -40,11 +40,9 @@ sol::state setup_lua() {
 	lua.new_usertype<Wavetable>("Wavetable",
 		"from_file", &Wavetable::from_file,
 		"from_func", &Wavetable::from_func,
-		"retrieve", &Wavetable::retrieve
+		"retrieve", &Wavetable::retrieve,
+		"save_to_file", &Wavetable::save_to_file
 	);
-
-
-	// # Load test.lua (testing for now)
 
 	return lua;
 }

@@ -4,6 +4,8 @@
 #include <cmath>
 
 
+enum WavAudioFormat { PCM_integer = 1, IEEE_754_float = 3 };
+
 Wavetable Wavetable::from_file(const std::string& path) {
 	const int MAX_SAMPLE_SIZE = 4096;
 	std::ifstream file(forrnsown_path(path), std::ios::binary);
@@ -48,7 +50,6 @@ Wavetable Wavetable::from_file(const std::string& path) {
 	// next 2 bytes store audio format used for samples
 	uint16_t audio_fmt = 0;
 	file.read(reinterpret_cast<char*>(&audio_fmt), 2);
-	enum AudioFormats { PCM_integer = 1, IEEE_754_float = 3 };
 	if (audio_fmt != PCM_integer && audio_fmt != IEEE_754_float) throw std::runtime_error(path + " has unsupported audio format.");
 	fmt_remaining_chunk_size -= 2;
 
@@ -169,4 +170,50 @@ float Wavetable::retrieve(float phase) {
 	const float &upper_sample = samples[(floored_idx+1) % samples.size()];
 
 	return (upper_sample - lower_sample) * fractional_part + lower_sample;
+}
+
+
+void Wavetable::save_to_file(const std::string& path) {
+	std::filesystem::path resolved_path = forrnsown_path(path);
+	if (std::filesystem::exists(resolved_path)) {
+		std::cout << ansi::yellow << "[forrnsown] couldn't save wavetable to " << resolved_path << " because file already exists" << ansi::reset << "\n";
+		return;
+	}
+	if (resolved_path.extension().string() != ".wav") {
+		std::cout << ansi::yellow << "[forrnsown] couldn't save wavetable to " << resolved_path << ". make sure your file name ends with .wav !!!" << ansi::reset << "\n";
+		return;
+	}
+	
+	// create structure to store wav file header data without byte alignment
+	#pragma pack(push, 1)
+	struct WavHeader {
+		char riff_header[4] = {'R', 'I', 'F', 'F'};
+		uint32_t remaining_bytes; // assign after construction
+		char wave_header[4] = {'W', 'A', 'V', 'E'};
+
+		char fmt_header[4] = {'f', 'm', 't', ' '};
+		uint32_t fmt_chunk_remaining_size = 16;
+		uint16_t audio_fmt = IEEE_754_float;
+		uint16_t amt_channels = 1; //mono
+		uint32_t sample_rate = 44100;
+		uint32_t bytes_per_sec = sample_rate * amt_channels * sizeof(float);
+		uint16_t bytes_per_block = amt_channels * sizeof(float);
+		uint16_t bits_per_sample = sizeof(float) * 8;
+
+		char data_header[4] = {'d', 'a', 't', 'a'};
+		uint32_t data_bytes; // assign afer construction
+	};
+	#pragma pack(pop)
+	WavHeader header;
+	// total size including header, minus 8 bytes.
+	header.remaining_bytes = (sizeof(WavHeader) + samples.size() * sizeof(float)) - 8;
+	header.data_bytes = samples.size() * sizeof(float);
+
+	std::ofstream file(resolved_path, std::ios::binary);
+	if (!file.is_open()) throw std::runtime_error("Couldn't open " + resolved_path.string() + " for saving wavetable :(");
+	file.write(reinterpret_cast<const char*>(&header), sizeof(WavHeader));
+	file.write(reinterpret_cast<const char*>(samples.data()), header.data_bytes);
+	file.close();
+
+	std::cout << ansi::cyan << "[forrnsown] saved your wavetable to " << path << " :D" << ansi::reset << "\n";
 }

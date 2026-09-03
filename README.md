@@ -11,17 +11,20 @@ As of now the project is really finicky, buggy and inefficient, I'm really sorry
     * I plan on adding sample-level processing soon.
 * Basic Midi NoteOff and NoteOn events (accessed using `block:get_midi_events()`)
 * Your script will be automatically reloaded upon modifications.
+* Loading wavetables from a file or function, as well as saving wavetables to a file. (`wt = Wavetable.from_file("sine.wav")`, `wt = Wavetable.from_func(...)`, `wt:save_to_file("meow.wav")`)
 
 ## Todo
 
-- [ ] Getting Tempo & Transport Sync
+- [x] Wavetables
+- [ ] Oscillators
+- [ ] Voice Manager
 - [ ] Biquad Filters
+- [ ] Microsoft Windows Support
+- [ ] Getting Tempo & Transport Sync
 - [ ] Performance Improvements
 - [ ] Support other Midi event types
-- [ ] Voice Manager
 - [ ] Input Channels
 - [ ] Sample-level process function
-- [ ] Microsoft Windows Support
 
 ## Current Usage
 
