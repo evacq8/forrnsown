@@ -9,14 +9,15 @@ As of now the project is really finicky, buggy and inefficient, I'm really sorry
 * As mentioned above, you can write your logic in Lua.
 * Block-level processing from the `process_block(block)` function
     * I plan on adding sample-level processing soon.
-* Basic Midi NoteOff and NoteOn events (accessed using `block:get_midi_events()`)
+* Basic Midi NoteOff and NoteOn events (`block:get_midi_events()`)
 * Your script will be automatically reloaded upon modifications.
 * Loading wavetables from a file or function, as well as saving wavetables to a file. (`wt = Wavetable.from_file("sine.wav")`, `wt = Wavetable.from_func(...)`, `wt:save_to_file("meow.wav")`)
+* Oscillators (`osc = Oscillator.new()`, `osc:set_wavetable(wt)`, `osc.frequency = 440`, `sample = osc:tick(sample_rate)`)
 
 ## Todo
 
 - [x] Wavetables
-- [ ] Oscillators
+- [x] Oscillators
 - [ ] Voice Manager
 - [ ] Biquad Filters
 - [ ] Microsoft Windows Support

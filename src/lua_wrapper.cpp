@@ -1,6 +1,7 @@
 #include <iostream>
 #include "lua_wrapper.hpp"
 #include "wavetable.hpp"
+#include "oscillator.hpp"
 
 sol::state setup_lua() {
 	sol::state lua;
@@ -42,6 +43,14 @@ sol::state setup_lua() {
 		"from_func", &Wavetable::from_func,
 		"retrieve", &Wavetable::retrieve,
 		"save_to_file", &Wavetable::save_to_file
+	);
+
+	lua.new_usertype<Oscillator>("Oscillator",
+		sol::constructors<Oscillator()>(),
+		"phase", &Oscillator::phase,
+		"frequency", &Oscillator::frequency,
+		"set_wavetable", &Oscillator::set_wavetable,
+		"tick", &Oscillator::tick
 	);
 
 	return lua;
