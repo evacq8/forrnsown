@@ -24,6 +24,7 @@ struct LuaAudioBlockWrapper {
 		if (channel == 0 || channel > 2) return;
 		if (value > 1) { output_buffers[channel-1][index-1] = 1; return; }
 		if (value < -1) { output_buffers[channel-1][index-1] = -1; return; }
+
 		output_buffers[channel-1][index-1] = value;
 	}
 

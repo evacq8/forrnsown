@@ -18,9 +18,10 @@ As of now the project is really finicky, buggy and inefficient, I'm really sorry
 
 - [x] Wavetables
 - [x] Oscillators
-- [ ] Voice Manager
+- [x] Adsr envelope usertype
 - [ ] Biquad Filters
 - [ ] Microsoft Windows Support
+- [ ] Voice Manager
 - [ ] Getting Tempo & Transport Sync
 - [ ] Performance Improvements
 - [ ] Support other Midi event types
