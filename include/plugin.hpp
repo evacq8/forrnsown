@@ -33,7 +33,7 @@ public:
 	double sample_rate = 44100.0;
 
 	Forrnsown();
-	void process(float** output_buffers, uint32_t buf_size, std::vector<MidiEvent>& midi_events);
+	void process(float** output_buffers, float** input_buffers, uint32_t buf_size, std::vector<MidiEvent>& midi_events);
 	bool load_script(const std::string& path);
 	void sample_rate_update(double new_sample_rate);
 };

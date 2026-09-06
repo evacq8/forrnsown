@@ -59,6 +59,8 @@ public:
 	// Called by clap when plugin needs to process next buffer
     clap_process_status process(const clap_process_t *process) noexcept override {
 		float** output_buffers = process->audio_outputs[0].data32;
+		float** input_buffers = (process->audio_inputs_count > 0) ? process->audio_inputs[0].data32 : nullptr;
+
 		uint32_t buffer_size = process->frames_count;
 
 		// ## Parse Midi
@@ -91,7 +93,7 @@ public:
 		}
 
 		// ## Now let the plugin process this buffer, then continue
-		forrnsown.process(output_buffers, buffer_size, midi_events);
+		forrnsown.process(output_buffers, input_buffers, buffer_size, midi_events);
         return CLAP_PROCESS_CONTINUE; 
     }
 
@@ -103,24 +105,37 @@ public:
 	// ~ Audio Ports ~
 	// Do we use audio ports? Yes.
 	bool implementsAudioPorts() const noexcept override { return true; }
-	// How many? 1 output, 0 input (we're an instrument, not a filter)
+	// How many? 1 output, 1 input
 	uint32_t audioPortsCount(bool isInput) const noexcept override {
-		return isInput ? 0 : 1;
+		// One input channel (reading audio), one output channel (outputing audio)
+		return isInput ? 1 : 1;
 	}
 	// Tell the DAW more about the 1 output.
 	bool audioPortsInfo(uint32_t index, bool isInput, clap_audio_port_info_t *info) const noexcept override {
 		// Return in-case the DAW accidently asks about.. 
-		// ..the wrong audio port index or an input
-		if (isInput || index > 0) return false; 
-		// Change settings under info object
-		info->id = 0; 
-		strncpy(info->name, "Main Output", sizeof(info->name)); // Set name
-		info->flags = CLAP_AUDIO_PORT_IS_MAIN; // This is the main output port
-		info->channel_count = 2; // Stereo output
-		info->port_type = CLAP_PORT_STEREO;
-		// No input pair to share memory with so give invalid ID.
-		info->in_place_pair = CLAP_INVALID_ID; 
-		return true;
+		// ..the wrong audio port index
+		if (index > 0) return false; 
+		if (!isInput) {
+			// Change settings under info object
+			info->id = 0; 
+			strncpy(info->name, "Main Output", sizeof(info->name)); // Set name
+			info->flags = CLAP_AUDIO_PORT_IS_MAIN; // This is the main output port
+			info->channel_count = 2; // Stereo output
+			info->port_type = CLAP_PORT_STEREO;
+			// We don't want both ports to share same buffers because it becomes harder to implement stuff
+			info->in_place_pair = CLAP_INVALID_ID; 
+			return true;
+		} else {
+			// Change settings under info object
+			info->id = 1; 
+			strncpy(info->name, "Main Input", sizeof(info->name)); // Set name
+			info->flags = CLAP_AUDIO_PORT_IS_MAIN; // This is the main output port
+			info->channel_count = 2; // Input
+			info->port_type = CLAP_PORT_STEREO;
+			// We don't want both ports to share same buffers because it becomes harder to implement stuff
+			info->in_place_pair = CLAP_INVALID_ID; 
+			return true;
+		}
 	}
 
 	// ~ Say we support MIDI ~

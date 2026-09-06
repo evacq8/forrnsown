@@ -4,6 +4,7 @@
 // Wrapper object to pass audio block info to lua
 struct LuaAudioBlockWrapper {
 	float** output_buffers = nullptr;
+	float** input_buffers = nullptr;
 	uint32_t block_size = 0;
 	const std::vector<MidiEvent>& notes;
 	/*
@@ -26,6 +27,10 @@ struct LuaAudioBlockWrapper {
 		if (value < -1) { output_buffers[channel-1][index-1] = -1; return; }
 
 		output_buffers[channel-1][index-1] = value;
+	}
+
+	float sample_read(uint32_t index, uint32_t channel=1) {
+		return input_buffers[channel-1][index-1];
 	}
 
 	std::vector<MidiEvent> get_midi_events() const { return notes; }

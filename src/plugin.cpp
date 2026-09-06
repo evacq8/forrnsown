@@ -8,7 +8,7 @@ Forrnsown::Forrnsown() {
 	last_write_time = std::filesystem::last_write_time(lua_script_path);
 }
 
-void Forrnsown::process(float** output_buffers, uint32_t buf_size, std::vector<MidiEvent>& midi_events) {
+void Forrnsown::process(float** output_buffers, float** input_buffers, uint32_t buf_size, std::vector<MidiEvent>& midi_events) {
 	// Check if last write time has changed, if so reload the lua script
 	if (std::filesystem::exists(lua_script_path)) {
 		auto write_time = std::filesystem::last_write_time(lua_script_path);
@@ -21,6 +21,7 @@ void Forrnsown::process(float** output_buffers, uint32_t buf_size, std::vector<M
 
 	LuaAudioBlockWrapper lua_block{
 		output_buffers,
+		input_buffers,
 		buf_size,
 		midi_events
 	};

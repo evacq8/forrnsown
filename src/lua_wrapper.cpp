@@ -36,6 +36,7 @@ sol::state setup_lua() {
 	lua.new_usertype<LuaAudioBlockWrapper>("Block",
 		"size", sol::readonly(&LuaAudioBlockWrapper::block_size),
 		"write_sample", &LuaAudioBlockWrapper::sample_write,
+		"read_sample", &LuaAudioBlockWrapper::sample_read,
 		"get_midi_events", [](LuaAudioBlockWrapper& block) {
 			return sol::as_table(block.get_midi_events());
 		}

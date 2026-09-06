@@ -9,6 +9,7 @@ As of now the project is really finicky, buggy and inefficient, I'm really sorry
 * As mentioned above, you can write your logic in Lua.
 * Block-level processing from the `process_block(block)` function
     * I plan on adding sample-level processing soon.
+* Input audio can be accessed via `block:read_sample(index, channel)`
 * Basic Midi NoteOff and NoteOn events (`block:get_midi_events()`)
 * Your script will be automatically reloaded upon modifications.
 * Loading wavetables from a file or function, as well as saving wavetables to a file. (`wt = Wavetable.from_file("sine.wav")`, `wt = Wavetable.from_func(...)`, `wt:save_to_file("meow.wav")`)
@@ -19,13 +20,13 @@ As of now the project is really finicky, buggy and inefficient, I'm really sorry
 - [x] Wavetables
 - [x] Oscillators
 - [x] Adsr envelope usertype
+- [x] Input Channels
 - [ ] Biquad Filters
 - [ ] Microsoft Windows Support
 - [ ] Voice Manager
 - [ ] Getting Tempo & Transport Sync
 - [ ] Performance Improvements
 - [ ] Support other Midi event types
-- [ ] Input Channels
 - [ ] Sample-level process function
 
 ## Current Usage
