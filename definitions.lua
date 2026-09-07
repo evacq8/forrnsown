@@ -30,9 +30,14 @@ function Block:write_sample(index, value, channel) end
 ---@return number
 function Block:read_sample(index, channel) end
 
----Gets table of MidiEvents which happened in the current block
----@return MidiEvent[]
-function Block:get_midi_events() end
+---Gets the [index]th midi event which happened in the current block
+---@param index integer
+---@return MidiEvent
+function Block:get_midi_event(index) end
+
+---Gets amount of midi events in the current block
+---@return integer
+function Block:get_midi_event_count() end
 
 -- WAVETABLE
 

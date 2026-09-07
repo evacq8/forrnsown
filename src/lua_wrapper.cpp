@@ -37,9 +37,17 @@ sol::state setup_lua() {
 		"size", sol::readonly(&LuaAudioBlockWrapper::block_size),
 		"write_sample", &LuaAudioBlockWrapper::sample_write,
 		"read_sample", &LuaAudioBlockWrapper::sample_read,
-		"get_midi_events", [](LuaAudioBlockWrapper& block) {
+		/*"get_midi_events", [](LuaAudioBlockWrapper& block) {
 			return sol::as_table(block.get_midi_events());
-		}
+		}*/
+		"get_midi_event_note_number", &LuaAudioBlockWrapper::get_midi_event_note_number,
+		"get_midi_event_velocity", &LuaAudioBlockWrapper::get_midi_event_velocity,
+		"get_midi_event_type", &LuaAudioBlockWrapper::get_midi_event_type,
+		"get_midi_event_offset", &LuaAudioBlockWrapper::get_midi_event_offset,
+		"get_midi_event_count", &LuaAudioBlockWrapper::get_midi_event_count,
+		"is_playing", sol::readonly(&LuaAudioBlockWrapper::is_playing),
+		"is_recording", sol::readonly(&LuaAudioBlockWrapper::is_recording),
+		"bpm", sol::readonly(&LuaAudioBlockWrapper::bpm)
 	);
 
 	lua.new_usertype<Wavetable>("Wavetable",
@@ -79,4 +87,3 @@ sol::state setup_lua() {
 
 	return lua;
 }
-

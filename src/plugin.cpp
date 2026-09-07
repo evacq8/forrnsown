@@ -8,7 +8,8 @@ Forrnsown::Forrnsown() {
 	last_write_time = std::filesystem::last_write_time(lua_script_path);
 }
 
-void Forrnsown::process(float** output_buffers, float** input_buffers, uint32_t buf_size, std::vector<MidiEvent>& midi_events) {
+
+void Forrnsown::process(float** output_buffers, float** input_buffers, uint32_t buf_size, std::vector<MidiEvent>& midi_events, bool is_playing, bool is_recording, float bpm) {
 	// Check if last write time has changed, if so reload the lua script
 	if (std::filesystem::exists(lua_script_path)) {
 		auto write_time = std::filesystem::last_write_time(lua_script_path);
@@ -23,17 +24,22 @@ void Forrnsown::process(float** output_buffers, float** input_buffers, uint32_t 
 		output_buffers,
 		input_buffers,
 		buf_size,
-		midi_events
+		midi_events,
+		is_playing,
+		is_recording,
+		bpm
 	};
 
-	// Execute lua 'process' function
-	if (!has_error) {
+	// !!! Everything past this point only runs if plugin isn't error-locked !!!
+	if (has_error) return;
+
+	if (lua_process_func) {
 		sol::protected_function_result result = lua_process_func(lua_block);
 		if (!result.valid()) {
 			has_error = true;
 			std::cerr << ansi::red << "[forrnsown] lua runtime error: " << ((sol::error)result).what() << "\nExecution stopped until next write." << ansi::reset << "\n";
 		}
-	}
+	};
 }
 
 bool Forrnsown::load_script(const std::string& path) {
@@ -49,16 +55,14 @@ bool Forrnsown::load_script(const std::string& path) {
 		return false;
 	}
 
-	// Fetch the process function in lua
+	// Fetch lua functions
 	lua_process_func = lua["process_block"];
 	// Check if it exists or is valid:
-	if (!lua_process_func.valid()) {
+	/*if (!lua_process_func.valid()) {
 		std::cerr << ansi::red << "[forrnsown] no or invalid 'process_block' function found.\nExecution stopped until next write" << ansi::reset << "\n";
 		has_error = true;
 		return false;
-	}
-
-
+	}*/
 	
 	return true;
 }

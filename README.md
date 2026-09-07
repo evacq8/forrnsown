@@ -21,13 +21,16 @@ As of now the project is really finicky, buggy and inefficient, I'm really sorry
 - [x] Oscillators
 - [x] Adsr envelope usertype
 - [x] Input Channels
+- [x] Getting Tempo & Transport (block.bpm, block.is_playing, block.is_recording)
+- [x] Performance Improvements I
+- [ ] Sample-level process function
+- [ ] Update definitions.lua
+- [ ] Fix random crashes
 - [ ] Biquad Filters
 - [ ] Microsoft Windows Support
 - [ ] Voice Manager
-- [ ] Getting Tempo & Transport Sync
-- [ ] Performance Improvements
+- [ ] Performance Improvements II
 - [ ] Support other Midi event types
-- [ ] Sample-level process function
 
 ## Current Usage
 

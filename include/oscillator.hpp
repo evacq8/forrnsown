@@ -5,9 +5,9 @@ class Oscillator {
 public:
 	float phase = 0;
 	float frequency = 440; // in hertz
-	Wavetable* wavetable = nullptr;
+	std::shared_ptr<Wavetable> wavetable = nullptr;
 
-	void set_wavetable(Wavetable* wt) { wavetable = wt; }
+	void set_wavetable(std::shared_ptr<Wavetable> wt) { this->wavetable = std::move(wt); }
 
 	// Increment and get current oscillator value, must be called every sample in order for frequency to be accuate.
 	float tick(float sample_rate);

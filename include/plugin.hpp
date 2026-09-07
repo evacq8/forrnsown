@@ -15,7 +15,8 @@ struct MidiEvent {
 	uint8_t velocity; // How hard a note was pressed 0-127
 	MidiEventType type;
 	//uint8_t channel; // TODO not implemented yet
-	uint32_t frame_offset = 0; // Which frame did this event happen in the buffer?
+	// 1 INDEXED Since must be passed ot lua!
+	uint32_t frame_offset = 1; // Which frame did this event happen in the buffer?
 };
 
 // An instance of forrnsown
@@ -24,7 +25,9 @@ public:
 	const clap_host_t* host; // pointer to host DAW interface
 	
 	sol::state lua; // Lua Virtual Machine used for this instance
+
 	sol::protected_function lua_process_func;
+
 	std::filesystem::path lua_script_path = forrnsown_path("main.lua");
 	std::filesystem::file_time_type last_write_time;
 	// Bool to check if any runtime or syntax errors occured to stop execution until next write
@@ -33,7 +36,7 @@ public:
 	double sample_rate = 44100.0;
 
 	Forrnsown();
-	void process(float** output_buffers, float** input_buffers, uint32_t buf_size, std::vector<MidiEvent>& midi_events);
+	void process(float** output_buffers, float** input_buffers, uint32_t buf_size, std::vector<MidiEvent>& midi_events, bool is_playing, bool is_recording, float bpm);
 	bool load_script(const std::string& path);
 	void sample_rate_update(double new_sample_rate);
 };

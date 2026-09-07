@@ -6,7 +6,7 @@
 
 enum WavAudioFormat { PCM_integer = 1, IEEE_754_float = 3 };
 
-Wavetable Wavetable::from_file(const std::string& path) {
+std::shared_ptr<Wavetable> Wavetable::from_file(const std::string& path) {
 	const int MAX_SAMPLE_SIZE = 4096;
 	std::ifstream file(forrnsown_path(path), std::ios::binary);
 	if (!file.is_open()) throw std::runtime_error("Couldn't open file " + path + " for wavetable.");
@@ -100,8 +100,8 @@ Wavetable Wavetable::from_file(const std::string& path) {
 	}
 
 	int total_samples = data_chunk_size / bytes_per_sample;
-	Wavetable wavetable;
-	wavetable.samples.resize(total_samples);
+	auto wavetable = std::make_shared<Wavetable>();
+	wavetable->samples.resize(total_samples);
 	
 	if (audio_fmt == PCM_integer) {
 		switch (bits_per_sample) {
@@ -109,14 +109,14 @@ Wavetable Wavetable::from_file(const std::string& path) {
 				for (int i = 0; i < total_samples; i++) {
 					// 8-bit pcm is unsigned for some reason
 					// so subtract 128 before normalizing
-					wavetable.samples[i] = (raw_bytes[i] - 128)/128.0f;
+					wavetable->samples[i] = (raw_bytes[i] - 128)/128.0f;
 				}
 				break;
 			case 16: // 16-bit PCM
 				for (int i = 0; i < total_samples; i++) {
 					int16_t raw = raw_bytes[i*bytes_per_sample] | 
 						(uint32_t)raw_bytes[i*bytes_per_sample+1] << 8;
-					wavetable.samples[i] = raw/32768.0f;
+					wavetable->samples[i] = raw/32768.0f;
 				}
 				break;
 			case 24: // 24-bit PCM
@@ -125,7 +125,7 @@ Wavetable Wavetable::from_file(const std::string& path) {
 						(uint32_t)raw_bytes[i*bytes_per_sample+1] << 8 |
 						(int8_t)raw_bytes[i*bytes_per_sample+2] << 16;
 					if (raw & 0x800000) raw |= 0xFF000000;
-					wavetable.samples[i] = raw/8388608.0f;
+					wavetable->samples[i] = raw/8388608.0f;
 				}
 				break;
 			case 32: // 32-bit PCM
@@ -134,26 +134,26 @@ Wavetable Wavetable::from_file(const std::string& path) {
 						(uint32_t)raw_bytes[i*bytes_per_sample+1] << 8 |
 						(uint32_t)raw_bytes[i*bytes_per_sample+2] << 16 |
 						(uint32_t)raw_bytes[i*bytes_per_sample+3] << 24;
-					wavetable.samples[i] = raw/2147483648.0f;
+					wavetable->samples[i] = raw/2147483648.0f;
 				}
 		}
 	} else if (audio_fmt == IEEE_754_float) {
 		for (int i = 0; i < total_samples; i++) {
-			wavetable.samples[i] = *reinterpret_cast<const float*>(&raw_bytes[i * bytes_per_sample]);
+			wavetable->samples[i] = *reinterpret_cast<const float*>(&raw_bytes[i * bytes_per_sample]);
 		}
 	}
 	return wavetable;
 }
 
 
-Wavetable Wavetable::from_func(std::function<float(float)> func) {
+std::shared_ptr<Wavetable> Wavetable::from_func(std::function<float(float)> func) {
 	if (!func) throw std::runtime_error("Invalid function passed into Wavetable.from_func()");
 	const int amt_samples = 2048;
-	Wavetable wavetable;
-	wavetable.samples.resize(amt_samples);
+	auto wavetable= std::make_shared<Wavetable>();;
+	wavetable->samples.resize(amt_samples);
 	for (int i = 0; i < amt_samples; i++) {
 		float phase = i/(float)amt_samples;
-		wavetable.samples[i] = func(phase);
+		wavetable->samples[i] = func(phase);
 	}
 	return wavetable;
 }
@@ -166,7 +166,7 @@ float Wavetable::retrieve(float phase) {
 	const float floating_idx = phase*samples.size();
 	const int floored_idx = std::floor(floating_idx);
 	const float fractional_part = floating_idx - floored_idx;
-	const float &lower_sample = samples[floored_idx];
+	const float &lower_sample = samples[floored_idx % samples.size()];
 	const float &upper_sample = samples[(floored_idx+1) % samples.size()];
 
 	return (upper_sample - lower_sample) * fractional_part + lower_sample;

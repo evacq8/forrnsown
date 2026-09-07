@@ -87,13 +87,22 @@ public:
 					velocity_byte,
 					// velocity 0 also means note off
 					(msg_type_nibble == 0x90) && (velocity_byte != 0) ? (MidiEventType)0x9 : (MidiEventType)0x8,
-					event_header->time,
+					// We need 1 indexing
+					event_header->time+1,
 				});
 			} else std::cerr << ansi::red << "[forrnsown midi] unknown midi message type" << ansi::reset << "\n";
 		}
 
 		// ## Now let the plugin process this buffer, then continue
-		forrnsown.process(output_buffers, input_buffers, buffer_size, midi_events);
+		forrnsown.process(
+				output_buffers, 
+				input_buffers, 
+				buffer_size, 
+				midi_events, 
+				(process->transport->flags & CLAP_TRANSPORT_IS_PLAYING) != 0,
+				(process->transport->flags & CLAP_TRANSPORT_IS_RECORDING) != 0,
+				process->transport->tempo
+		);
         return CLAP_PROCESS_CONTINUE; 
     }
 
