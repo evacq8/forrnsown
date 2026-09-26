@@ -4,51 +4,35 @@
 #include "oscillator.hpp"
 #include "adsr.hpp"
 
-sol::state setup_lua() {
-	sol::state lua;
+// Embed source from engine.lua into this char[] at compile time
+constexpr char ENGINE_LUA_SOURCE[] = {
+#embed "../engine.lua"
+	, 0
+};
 
-	// allow only safe libraries
+
+void Forrnsown::setup_lua() {
+	// Open required libraries
 	lua.open_libraries(
 		sol::lib::base, 
 		sol::lib::math,
 		sol::lib::string,
-		sol::lib::table
+		sol::lib::table,
+		sol::lib::package,
+		sol::lib::ffi // required by engine.lua
 	);
-	// disable scary functions from the base lua library
-	lua["dofile"] = sol::nil;
-	lua["loadfile"] = sol::nil;
-	lua["load"] = sol::nil;
-	lua["loadstring"] = sol::nil;
-	
+	// Load engine.lua into global table
+	sol::protected_function_result engine_res = lua.script(ENGINE_LUA_SOURCE);
+	if(!engine_res.valid()) {
+		sol::error err = engine_res;
+		std::cerr << "engine error: " << err.what() << "\n";
+	}
+	engine_process_func = lua["__engine_process"];
+
 	lua.new_enum<MidiEventType>("MidiEventType", {
-		{ "NoteOff", MidiEventType::NoteOff },
-		{ "NoteOn", MidiEventType::NoteOn }
+		{ "NOTE_OFF", MidiEventType::NoteOff },
+		{ "NOTE_ON", MidiEventType::NoteOn }
 	});
-
-	lua.new_usertype<MidiEvent>("MidiEvent",
-		"type", &MidiEvent::type,
-		//"channel", &LuaMidiEventWrapper::channel,
-		"number", &MidiEvent::number,
-		"velocity", &MidiEvent::velocity,
-		"offset", &MidiEvent::frame_offset
-	);
-
-	lua.new_usertype<LuaAudioBlockWrapper>("Block",
-		"size", sol::readonly(&LuaAudioBlockWrapper::block_size),
-		"write_sample", &LuaAudioBlockWrapper::sample_write,
-		"read_sample", &LuaAudioBlockWrapper::sample_read,
-		/*"get_midi_events", [](LuaAudioBlockWrapper& block) {
-			return sol::as_table(block.get_midi_events());
-		}*/
-		"get_midi_event_note_number", &LuaAudioBlockWrapper::get_midi_event_note_number,
-		"get_midi_event_velocity", &LuaAudioBlockWrapper::get_midi_event_velocity,
-		"get_midi_event_type", &LuaAudioBlockWrapper::get_midi_event_type,
-		"get_midi_event_offset", &LuaAudioBlockWrapper::get_midi_event_offset,
-		"get_midi_event_count", &LuaAudioBlockWrapper::get_midi_event_count,
-		"is_playing", sol::readonly(&LuaAudioBlockWrapper::is_playing),
-		"is_recording", sol::readonly(&LuaAudioBlockWrapper::is_recording),
-		"bpm", sol::readonly(&LuaAudioBlockWrapper::bpm)
-	);
 
 	lua.new_usertype<Wavetable>("Wavetable",
 		"from_file", &Wavetable::from_file,
@@ -84,6 +68,13 @@ sol::state setup_lua() {
 		"release", &Adsr::release,
 		"tick", &Adsr::tick
 	);
-
-	return lua;
+	
+	// disable scary functions/libraries from global scope
+	lua["ffi"] = sol::nil;
+	lua["package"] = sol::nil;
+	lua["dofile"] = sol::nil;
+	lua["loadfile"] = sol::nil;
+	lua["load"] = sol::nil;
+	lua["loadstring"] = sol::nil;
+	lua["__engine_process"] = sol::nil;
 }

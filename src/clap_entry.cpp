@@ -47,6 +47,7 @@ public:
             clap::helpers::MisbehaviourHandler::Ignore, 
             clap::helpers::CheckingLevel::Maximal
 	>(&plugin_descriptor, host) {
+		// to avoid allocation
 		midi_events.reserve(128);
 	}
 	
@@ -74,35 +75,34 @@ public:
 				clap_event_midi_t* event_midi = (clap_event_midi_t*)event_header;
 
 				// ### Process the MIDI 1.0
-				const uint8_t msg_type_nibble = event_midi->data[0] & 0b11110000;
+				const uint8_t msg_type_nibble = (event_midi->data[0] & 0b11110000);
 				const uint8_t channel_nibble = event_midi->data[0] & 0b00001111;
 				const uint8_t note_num_byte = event_midi->data[1];
 				const uint8_t velocity_byte = event_midi->data[2];
 
-				// exit if event/msg type is not note ON/OFF (TODO: parse more msg types)
-				if (msg_type_nibble != 0x80 && msg_type_nibble != 0x90) continue;
-				
+				const uint8_t msg_type = msg_type_nibble >> 4;
+
 				midi_events.push_back({
+					(MidiEventType)msg_type,
+					channel_nibble,
 					note_num_byte,
 					velocity_byte,
-					// velocity 0 also means note off
-					(msg_type_nibble == 0x90) && (velocity_byte != 0) ? (MidiEventType)0x9 : (MidiEventType)0x8,
-					// We need 1 indexing
-					event_header->time+1,
+					event_header->time,
 				});
 			} else std::cerr << ansi::red << "[forrnsown midi] unknown midi message type" << ansi::reset << "\n";
 		}
 
-		// ## Now let the plugin process this buffer, then continue
-		forrnsown.process(
-				output_buffers, 
-				input_buffers, 
-				buffer_size, 
-				midi_events, 
-				(process->transport->flags & CLAP_TRANSPORT_IS_PLAYING) != 0,
-				(process->transport->flags & CLAP_TRANSPORT_IS_RECORDING) != 0,
-				process->transport->tempo
-		);
+		AudioBlock block;
+		block.output_buffers = output_buffers;
+		block.input_buffers = input_buffers;
+		block.block_size = buffer_size;
+		block.midi_events = midi_events.data();
+		block.midi_event_count = midi_events.size();
+		block.is_playing = (process->transport->flags & CLAP_TRANSPORT_IS_PLAYING) != 0,
+		block.is_recording = (process->transport->flags & CLAP_TRANSPORT_IS_RECORDING) != 0,
+		block.bpm = process->transport->tempo;
+		// ## Now let the plugin process this block, then continue
+		forrnsown.process(block);
         return CLAP_PROCESS_CONTINUE; 
     }
 

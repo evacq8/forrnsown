@@ -2,16 +2,33 @@
 
 An audio plugin sandbox that lets you do all your DSP shenanigans in [Lua](https://www.lua.org/about.html). ^v^
 
-As of now the project is really finicky, buggy and inefficient, I'm really sorry if all the pro audio engineers are pulling their hair out right now.
+As of now the project is really finicky, buggy, and inefficient, I'm really sorry if all the pro audio engineers are pulling their hair out right now.
 
 ## Features
 
 * As mentioned above, you can write your logic in Lua.
-* Block-level processing from the `process_block(block)` function
-    * I plan on adding sample-level processing soon.
-* Input audio can be accessed via `block:read_sample(index, channel)`
-* Basic Midi NoteOff and NoteOn events (`block:get_midi_events()`)
-* Your script will be automatically reloaded upon modifications.
+* Sample level process function:
+```lua
+function process(sample)
+    -- e.g. white noise
+	sample:write(math.random(), 1) -- left
+	sample:write(math.random(), 2) -- right
+    -- you can also read input audio like:
+    -- local read = sample:read(1)
+end
+```
+* Midi events:
+```lua
+function on_midi_event(event)
+    if event:type() == MidiEventType.NOTE_ON then
+        print("hi from midi note", event:number())
+    elseif event:type() == MidiEventType.NOTE_OFF then
+        print("bye from midi note", event:number())
+    end
+    -- other event methods include event:channel(), event:velocity(), event:note()
+end
+```
+* Hot reloading upon modifications to your lua script
 * Loading wavetables from a file or function, as well as saving wavetables to a file. (`wt = Wavetable.from_file("sine.wav")`, `wt = Wavetable.from_func(...)`, `wt:save_to_file("meow.wav")`)
 * Oscillators (`osc = Oscillator.new()`, `osc:set_wavetable(wt)`, `osc.frequency = 440`, `sample = osc:tick(sample_rate)`)
 
@@ -23,42 +40,19 @@ As of now the project is really finicky, buggy and inefficient, I'm really sorry
 - [x] Input Channels
 - [x] Getting Tempo & Transport (block.bpm, block.is_playing, block.is_recording)
 - [x] Performance Improvements I
-- [ ] Sample-level process function
-- [ ] Update definitions.lua
+- [x] Sample-level process function
+- [x] Update definitions.lua
 - [ ] Fix random crashes
 - [ ] Biquad Filters
 - [ ] Microsoft Windows Support
 - [ ] Voice Manager
 - [ ] Performance Improvements II
 - [ ] Support other Midi event types
+- [ ] Midi Polyphonic Expression
 
-## Current Usage
+## Current Usage (todo)
 
 As of now, the script location is hard-coded to be at `~/.forrnsown/main.lua` (I'm sorry)
-
-* Example: playing a 440 hz sine wave
-```lua
-local phase = 0.0
-local increment = 440.0 / sample_rate -- 440 hz
--- called once every audio block to write output
-function process_block(block) 
-    -- getting block size
-    local block_size = block.size
-    -- loop through samples
-    for i=1, block_size do
-        -- sine oscillator
-        local sample = math.sin(phase*2*math.pi)
-        -- increment phase and wrap it
-        phase = phase + increment
-        while phase >= 1 do 
-            phase = phase -1
-        end
-        -- write to output buffers sample by sample
-        block:write_sample(i, sample, 1) -- left channel
-        block:write_sample(i, sample, 2) -- right channel
-    end
-end
-```
 
 ## Dependencies 
 
@@ -70,6 +64,5 @@ Thanks to all the stuff that makes this possible!
 ## Building From Source
 
 hehe good luck
-
 
 

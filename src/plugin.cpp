@@ -3,13 +3,13 @@
 #include "utils.hpp"
 
 Forrnsown::Forrnsown() {
-	lua = setup_lua();
+	setup_lua();
 	load_script(lua_script_path);
 	last_write_time = std::filesystem::last_write_time(lua_script_path);
 }
 
 
-void Forrnsown::process(float** output_buffers, float** input_buffers, uint32_t buf_size, std::vector<MidiEvent>& midi_events, bool is_playing, bool is_recording, float bpm) {
+void Forrnsown::process(AudioBlock& block) {
 	// Check if last write time has changed, if so reload the lua script
 	if (std::filesystem::exists(lua_script_path)) {
 		auto write_time = std::filesystem::last_write_time(lua_script_path);
@@ -20,21 +20,11 @@ void Forrnsown::process(float** output_buffers, float** input_buffers, uint32_t 
 		}
 	}
 
-	LuaAudioBlockWrapper lua_block{
-		output_buffers,
-		input_buffers,
-		buf_size,
-		midi_events,
-		is_playing,
-		is_recording,
-		bpm
-	};
-
 	// !!! Everything past this point only runs if plugin isn't error-locked !!!
 	if (has_error) return;
 
-	if (lua_process_func) {
-		sol::protected_function_result result = lua_process_func(lua_block);
+	if (engine_process_func) {
+		sol::protected_function_result result = engine_process_func(static_cast<void*>(&block), user_process_func, user_on_midi_event_func);
 		if (!result.valid()) {
 			has_error = true;
 			std::cerr << ansi::red << "[forrnsown] lua runtime error: " << ((sol::error)result).what() << "\nExecution stopped until next write." << ansi::reset << "\n";
@@ -44,7 +34,7 @@ void Forrnsown::process(float** output_buffers, float** input_buffers, uint32_t 
 
 bool Forrnsown::load_script(const std::string& path) {
 	// expose sample rate as a global in lua
-	lua["sample_rate"] = sample_rate; // TODO handle sample rate changes while plugin is active
+	lua["sample_rate"] = sample_rate;
 
 	std::cout << ansi::blue << "[forrnsown] loading " << lua_script_path << ansi::reset << "\n";
 	try {
@@ -55,15 +45,9 @@ bool Forrnsown::load_script(const std::string& path) {
 		return false;
 	}
 
-	// Fetch lua functions
-	lua_process_func = lua["process_block"];
-	// Check if it exists or is valid:
-	/*if (!lua_process_func.valid()) {
-		std::cerr << ansi::red << "[forrnsown] no or invalid 'process_block' function found.\nExecution stopped until next write" << ansi::reset << "\n";
-		has_error = true;
-		return false;
-	}*/
-	
+	user_process_func = lua["process"];
+	user_on_midi_event_func = lua["on_midi_event"];
+
 	return true;
 }
 

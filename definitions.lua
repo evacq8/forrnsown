@@ -6,38 +6,38 @@
 
 -- MIDI EVENT
 
----@class MidiEvent
----@field type MidiEventType This event's MIDI event type
----@field number integer The MIDI note number (0-127)
----@field velocity integer How hard the note was pressed on scale from 0 to 127
----@field offset integer The frame number which this event happened on
+---@class MidiEvent the parameter for on_midi_event() containing info about the event
+MidiEvent = {}
 
--- BLOCK
+---@return MidiEventType MidiEventType
+function MidiEvent:type() end
 
----@class Block An object used to control audio on a block-level
----@field size integer The amount of frames in this block
-Block = {}
+---@return integer channel Midi channel from 1 - 16
+function MidiEvent:channel() end
 
----Writes sample to output buffer to be played
----@param index integer Sample number which you want to write you in the block
----@param value number The value you want the sample to be from -1.0 to 1.0
----@param channel integer The channel number (1 = left channel, 2 = right channel)
-function Block:write_sample(index, value, channel) end
+---@return integer note Midi note from 0 - 127
+function MidiEvent:note() end
 
----Reads sample from input buffer
----@param index integer Sample number which you want to read from in the block
----@param channel integer The channel number (1 = left channel, 2 = right channel)
----@return number
-function Block:read_sample(index, channel) end
+---@return number velocity How hard note was pressed from 0-127
+function MidiEvent:velocity() end
 
----Gets the [index]th midi event which happened in the current block
----@param index integer
----@return MidiEvent
-function Block:get_midi_event(index) end
+---Calculate this midi event's frequency based on equal temperament tuning
+---@return number frequency in Hertz
+function MidiEvent:frequency() end
 
----Gets amount of midi events in the current block
----@return integer
-function Block:get_midi_event_count() end
+-- SAMPLE
+
+---@class Sample the parameter for process() containing methods for processing the sample
+Sample = {}
+
+---Write audio to this sample
+---@param val number The value you want to write to this sample from -1.0 - 1.0
+---@param channel integer The channel which you want to write to (default 1)
+function Sample:write(val, channel) end
+
+---Read input audio from this sample
+---@param channel integer The channel you want to read from (default 1)
+function Sample:read(channel) end
 
 -- WAVETABLE
 
@@ -112,9 +112,13 @@ function Adsr:tick(sample_rate) end
 -- ~ Functions ~ --
 -------------------
 
----Called every audio block in order for you to process it.
----@param block Block
-function process_block(block) end
+---Called every sample
+---@param sample Sample
+function process(sample) end
+
+---Called when a midi event occurs
+---@param event MidiEvent
+function on_midi_event(event) end
 
 ---------------------------
 -- ~ Globals and Enums ~ --
@@ -125,15 +129,15 @@ sample_rate = 44100.0
 
 ---@enum MidiEventType
 MidiEventType = {
-	NoteOff = 8,
-	NoteOn = 9
+	NOTE_OFF = 8,
+	NOTE_ON = 9,
 }
 
 ---@enum AdsrState
 AdsrState = {
-	Attacking = 0,
-	Decaying = 1,
-	Sustaining = 2,
-	Releasing = 3,
-	Idle = 4
+	ATTACKING = 0,
+	DECAYING = 1,
+	SUSTAINING = 2,
+	RELEASING = 3,
+	IDLE = 4
 }

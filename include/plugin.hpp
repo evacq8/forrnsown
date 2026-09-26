@@ -11,12 +11,25 @@ enum class MidiEventType : uint8_t {
 };
 
 struct MidiEvent {
+	MidiEventType type;
+	uint8_t channel;
 	uint8_t number; // Note number 0-127, 69 = A4
 	uint8_t velocity; // How hard a note was pressed 0-127
-	MidiEventType type;
-	//uint8_t channel; // TODO not implemented yet
-	// 1 INDEXED Since must be passed ot lua!
 	uint32_t frame_offset = 1; // Which frame did this event happen in the buffer?
+};
+
+// LuaJit FFI compatible audio block structure
+struct AudioBlock {
+	float** output_buffers = nullptr;
+	float** input_buffers = nullptr;
+	uint32_t block_size;
+
+	const MidiEvent* midi_events;
+	uint32_t midi_event_count;
+
+	uint8_t is_playing;
+	uint8_t is_recording;
+	float bpm;
 };
 
 // An instance of forrnsown
@@ -26,7 +39,10 @@ public:
 	
 	sol::state lua; // Lua Virtual Machine used for this instance
 
-	sol::protected_function lua_process_func;
+	sol::protected_function engine_process_func;
+
+	sol::protected_function user_process_func;
+	sol::protected_function user_on_midi_event_func;
 
 	std::filesystem::path lua_script_path = forrnsown_path("main.lua");
 	std::filesystem::file_time_type last_write_time;
@@ -36,8 +52,9 @@ public:
 	double sample_rate = 44100.0;
 
 	Forrnsown();
-	void process(float** output_buffers, float** input_buffers, uint32_t buf_size, std::vector<MidiEvent>& midi_events, bool is_playing, bool is_recording, float bpm);
+	void process(AudioBlock& block);
 	bool load_script(const std::string& path);
 	void sample_rate_update(double new_sample_rate);
+	void setup_lua();
 };
 
