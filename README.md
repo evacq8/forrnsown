@@ -11,26 +11,27 @@ As of now the project is really finicky, buggy, and inefficient, I'm really sorr
 ```lua
 function process(sample)
     -- e.g. white noise
-	sample:write(math.random(), 1) -- left
-	sample:write(math.random(), 2) -- right
+	sample:write(math.random(-1,1), 1) -- left
+	sample:write(math.random(-1,1), 2) -- right
     -- you can also read input audio like:
-    -- local read = sample:read(1)
+    -- local read = sample:read(1) -- left
 end
 ```
 * Midi events:
 ```lua
 function on_midi_event(event)
     if event:type() == MidiEventType.NOTE_ON then
-        print("hi from midi note", event:number())
+        print("hi from midi note", event:note())
     elseif event:type() == MidiEventType.NOTE_OFF then
-        print("bye from midi note", event:number())
+        print("bye from midi note", event:note())
     end
-    -- other event methods include event:channel(), event:velocity(), event:note()
+    -- other event methods include event:channel(), event:velocity()
 end
 ```
 * Hot reloading upon modifications to your lua script
 * Loading wavetables from a file or function, as well as saving wavetables to a file. (`wt = Wavetable.from_file("sine.wav")`, `wt = Wavetable.from_func(...)`, `wt:save_to_file("meow.wav")`)
 * Oscillators (`osc = Oscillator.new()`, `osc:set_wavetable(wt)`, `osc.frequency = 440`, `sample = osc:tick(sample_rate)`)
+* Delay lines (`dl = DelayLine.new()`, `dl:set_max_delay(2.0, sample_rate)`, `dl.delay = 0.1`, `dl.rt60 = 20.0`)
 
 ## Todo
 
@@ -38,10 +39,13 @@ end
 - [x] Oscillators
 - [x] Adsr envelope usertype
 - [x] Input Channels
-- [x] Getting Tempo & Transport (block.bpm, block.is_playing, block.is_recording)
+- [ ] Getting Tempo & Transport (have to reimplement)
 - [x] Performance Improvements I
 - [x] Sample-level process function
 - [x] Update definitions.lua
+- [x] Delay lines!
+- [ ] Make it so `Oscillator`, `Adsr`, and `DelayLine` know the current `sample_rate` without the user having to pass it
+- [ ] Add a way so that multiple instances of forrnsown can use different lua scripts without a gui (I'm doing anything to avoid adding a gui)
 - [ ] Fix random crashes
 - [ ] Biquad Filters
 - [ ] Microsoft Windows Support

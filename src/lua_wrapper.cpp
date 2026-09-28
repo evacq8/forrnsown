@@ -3,6 +3,7 @@
 #include "wavetable.hpp"
 #include "oscillator.hpp"
 #include "adsr.hpp"
+#include "delay_line.hpp"
 
 // Embed source from engine.lua into this char[] at compile time
 constexpr char ENGINE_LUA_SOURCE[] = {
@@ -67,6 +68,14 @@ void Forrnsown::setup_lua() {
 		"attack", &Adsr::attack,
 		"release", &Adsr::release,
 		"tick", &Adsr::tick
+	);
+
+	lua.new_usertype<DelayLine>("DelayLine",
+		sol::constructors<DelayLine()>(),
+		"delay", &DelayLine::delay,
+		"rt60", &DelayLine::rt60,
+		"set_max_delay", &DelayLine::set_max_delay,
+		"tick", &DelayLine::tick
 	);
 	
 	// disable scary functions/libraries from global scope

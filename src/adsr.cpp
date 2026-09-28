@@ -8,7 +8,7 @@ float get_level_from_progress(float initial_level, float target_level, float pro
 	float exponent = std::pow(2.0f, -tension);
 	// calculate new 'weighted' progress from linear progress using exponent
 	float weighted_progress = std::pow(progress, exponent);
-	return (target_level - initial_level)*weighted_progress + initial_level;
+	return (target_level - initial_level)*weighted_progress + initial_level; // linear interpolation
 }
 float get_progress_from_level(float initial_level, float target_level, float level, float tension) {
 	float exponent = std::pow(2.0f, -tension);
