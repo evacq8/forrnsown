@@ -4,6 +4,7 @@
 #include "oscillator.hpp"
 #include "adsr.hpp"
 #include "delay_line.hpp"
+#include "biquad.hpp"
 
 // Embed source from engine.lua into this char[] at compile time
 constexpr char ENGINE_LUA_SOURCE[] = {
@@ -77,6 +78,26 @@ void Forrnsown::setup_lua() {
 		"set_max_delay", &DelayLine::set_max_delay,
 		"tick", &DelayLine::tick
 	);
+
+	lua.new_usertype<Biquad>("Biquad", 
+		sol::constructors<Biquad()>(),
+		"a1", &Biquad::a1,
+		"a2", &Biquad::a2,
+		"b0", &Biquad::b0,
+		"b1", &Biquad::b1,
+		"b2", &Biquad::b2,
+		"tick", &Biquad::tick,
+		"set_low_pass", &Biquad::set_low_pass,
+		"set_high_pass", &Biquad::set_high_pass,
+		"set_constant_skirt_gain_band_pass", &Biquad::set_constant_skirt_gain_band_pass,
+		"set_band_pass", &Biquad::set_band_pass,
+		"set_notch", &Biquad::set_notch,
+		"set_all_pass", &Biquad::set_all_pass,
+		"set_peaking_eq", &Biquad::set_peaking_eq,
+		"set_low_shelf", &Biquad::set_low_shelf,
+		"set_high_shelf", &Biquad::set_high_shelf
+	);
+
 	
 	// disable scary functions/libraries from global scope
 	lua["ffi"] = sol::nil;

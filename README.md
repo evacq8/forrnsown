@@ -32,6 +32,7 @@ end
 * Loading wavetables from a file or function, as well as saving wavetables to a file. (`wt = Wavetable.from_file("sine.wav")`, `wt = Wavetable.from_func(...)`, `wt:save_to_file("meow.wav")`)
 * Oscillators (`osc = Oscillator.new()`, `osc:set_wavetable(wt)`, `osc.frequency = 440`, `sample = osc:tick(sample_rate)`)
 * Delay lines (`dl = DelayLine.new()`, `dl:set_max_delay(2.0, sample_rate)`, `dl.delay = 0.1`, `dl.rt60 = 20.0`)
+* Biquad filters (`bq = Biquad.new()`, `bq:set_low_pass(4000, 0.7, sample_rate)`)
 
 ## Todo
 
@@ -42,15 +43,17 @@ end
 - [ ] Getting Tempo & Transport (have to reimplement)
 - [x] Performance Improvements I
 - [x] Sample-level process function
-- [x] Update definitions.lua
+- [ ] Update definitions.lua III
 - [x] Delay lines!
-- [ ] Make it so `Oscillator`, `Adsr`, and `DelayLine` know the current `sample_rate` without the user having to pass it
+- [x] Biquad Filters!
+- [ ] Performance Improvements II (much needed)
+- [ ] Fix random crashes (also much needed)
+- [ ] Make delay line not use linear interpolation
+- [ ] Make it so `Oscillator`, `Adsr`, `Biquad` and `DelayLine` know the current `sample_rate` without the user having to pass it
 - [ ] Add a way so that multiple instances of forrnsown can use different lua scripts without a gui (I'm doing anything to avoid adding a gui)
-- [ ] Fix random crashes
 - [ ] Biquad Filters
 - [ ] Microsoft Windows Support
-- [ ] Voice Manager
-- [ ] Performance Improvements II
+- [ ] Voice Manager Helper
 - [ ] Support other Midi event types
 - [ ] Midi Polyphonic Expression
 

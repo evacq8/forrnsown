@@ -8,7 +8,7 @@ public:
 	float delay = 1.0; // delay in seconds to when sound is played back
 
 	 // Reverberation Time 60 - how many seconds it takes for feedback to decay by 60db
-	 // 0 means no reverberation
+	 // 0 means no delay
 	float rt60 = 0;
 
 	// Allocate memory to work with a new max delay
